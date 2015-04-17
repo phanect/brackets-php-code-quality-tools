@@ -1,25 +1,25 @@
 define( function( require ) {
 	'use strict';
-	
+
 	// Get module dependencies.
 	var Parser = require( 'modules/parsers/base' ),
 		Paths = require( 'modules/Paths' ),
 		PHPCS = new Parser( 'phpcs', 'PHP CodeSniffer' );
-	
+
 	PHPCS.setCommand( 'php {{path}} --standard={{standards}} --report-width=300 {{file}}' );
-	
+
 	PHPCS.buildCommand = function( file ) {
 		var standards = this.concatenateArray( this.prepareStandards( this._preferences.get( 'phpcs-standards' ) ) );
-		
+
 		return this._command
 			.replace( '{{path}}', this._path )
 			.replace( '{{file}}', file )
 			.replace( '{{standards}}', standards );
 	};
-	
+
 	PHPCS.prepareStandards = function( standards ) {
 		var standard;
-		
+
 		// Make sure standards are available.
 		if ( standards ) {
 			// Go through each standard.
@@ -30,23 +30,23 @@ define( function( require ) {
 				}
 			}
 		}
-		
+
 		return standards;
 	};
-	
+
 	PHPCS.shouldRun = function() {
 		return this._preferences.get( 'phpcs-standards' ) !== false;
 	};
-	
+
 	PHPCS.callback = function( data ) {
 		var regularExpression = /(\d+)\s\|\s(.*)\s\|(.*)/g,
 			matches,
 			type;
-		
+
 		// Go through all matching rows in result.
 		while ( ( matches = regularExpression.exec( data ) ) !== null ) {
 			type = matches[ 2 ].match( 'ERROR' ) ? PHPCS._codeInspection.Type.ERROR : PHPCS._codeInspection.Type.WARNING;
-			
+
 			// Add each error to array of errors.
 			PHPCS._errors.push( {
 				pos: {
@@ -56,10 +56,10 @@ define( function( require ) {
 				type: type
 			} );
 		}
-		
+
 		// Run CodeInspection.
 		PHPCS.requestRun();
 	};
-	
+
 	return PHPCS;
 } );
