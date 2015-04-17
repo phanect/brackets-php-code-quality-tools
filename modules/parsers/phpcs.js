@@ -5,7 +5,8 @@ define( function( require ) {
 	'use strict';
 
 	// Get module dependencies.
-	var Parser = require( 'modules/parsers/base' ),
+	var File = require( 'filesystem/File' ),
+		Parser = require( 'modules/parsers/base' ),
 		Paths = require( 'modules/Paths' ),
 		ProjectManager = require( 'project/ProjectManager' ),
 		PHPCS = new Parser( 'phpcs', 'PHP CodeSniffer' );
@@ -14,9 +15,9 @@ define( function( require ) {
 
 	PHPCS.buildCommand = function( file ) {
 		var standards,
-			customRules = path.join( ProjectManager.getBaseUrl(), 'ruleset.xml' );
+			customRules = FileSystem( ProjectManager.getBaseUrl() + '/ruleset.xml' );
 
-		if ( fs.existsSync( customRules ) ) {
+		if ( customRules.exists() ) {
 			standards = this.concatenateArray( this.prepareStandards( customRules ) );
 		} else {
 			standards = this.concatenateArray( this.prepareStandards( this._preferences.get( 'phpcs-standards' ) ) );
