@@ -1,15 +1,26 @@
+var fs = require( 'fs' ),
+	path = require( 'path' );
+
 define( function( require ) {
 	'use strict';
 
 	// Get module dependencies.
 	var Parser = require( 'modules/parsers/base' ),
 		Paths = require( 'modules/Paths' ),
+		ProjectManager = require( 'project/ProjectManager' ),
 		PHPCS = new Parser( 'phpcs', 'PHP CodeSniffer' );
 
 	PHPCS.setCommand( 'php {{path}} --standard={{standards}} --report-width=300 {{file}}' );
 
 	PHPCS.buildCommand = function( file ) {
-		var standards = this.concatenateArray( this.prepareStandards( this._preferences.get( 'phpcs-standards' ) ) );
+		var standards,
+			customRules = path.join( ProjectManager.getBaseUrl(), 'ruleset.xml' );
+
+		if ( fs.existsSync( customRules ) ) {
+			standards = this.concatenateArray( this.prepareStandards( customRules ) );
+		} else {
+			standards = this.concatenateArray( this.prepareStandards( this._preferences.get( 'phpcs-standards' ) ) );
+		}
 
 		return this._command
 			.replace( '{{path}}', this._path )
